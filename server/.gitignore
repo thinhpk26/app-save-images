@@ -1,0 +1,4 @@
+# pucblic với node_modules nặng nên không up lên
+node_modules
+package-lock.json
+public
