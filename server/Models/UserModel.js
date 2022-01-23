@@ -1,10 +1,11 @@
 const {Schema, mongoose} = require('./connectDatabase')
 
 const usersSchema = Schema({
-    account: String,
+    account: String, // tên tài khoản
     password: String,
     username: String,
     userID: String,
+    socketCurrentID: String,
     retrieval: {
         numberphone: String,
         email: String,
@@ -18,7 +19,10 @@ const usersSchema = Schema({
         link: String, //url
         picturename: String,
         pictureID: String,
-        datetime: Object, // object: {hours: ..., day: ..., month: ..., year: ...}
+        datetime: {
+            type: Date,
+            default: Date.now(),
+        },
         publicTo: [{
             type: Schema.Types.ObjectId,
             ref: 'groups'
@@ -32,7 +36,10 @@ const usersSchema = Schema({
                 link: String, //url
                 picturename: String,
                 pictureID: String,
-                datetime: Object, // object: {hours: ..., day: ..., month: ..., year: ...}
+                datetime: {
+                    type: Date,
+                    default: Date.now(),
+                },
                 publicTo: [{
                     type: Schema.Types.ObjectId,
                     ref: 'groups'
@@ -53,6 +60,7 @@ const usersSchema = Schema({
         type: Schema.Types.ObjectId,
         ref: 'users'
     }], // các friend bị chặn 
+    soketCurrentID: String,
 }, {
     connection: 'Users'
 })

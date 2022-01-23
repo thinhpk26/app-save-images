@@ -24,7 +24,10 @@ const groupsSchema = Schema({
             ref: 'users',
         }],
         toAll: Boolean,
-        datetime: Object,
+        datetime: {
+            type: Date,
+            default: Date.now(),
+        },
         msg: String,
     }],
     folder: [{
@@ -50,10 +53,16 @@ const picturesOfGroupSchema = Schema({
         type: Schema.Types.ObjectId,
         ref: 'groups'
     },
-    datetime: Object, // object: {hours: ..., day: ..., month: ..., year: ...}
+    datetime: {
+        type: Date,
+        default: Date.now(),
+    },
     comments: [{
         mode: Boolean, // chế độ true ẩn danh , false là public
-        datetime: Object, // object: {hours: ..., day: ..., month: ..., year: ...}
+        datetime: {
+            type: Date,
+            default: Date.now(),
+        },
         from: {
             type: Schema.Types.ObjectId,
             ref: 'users'
