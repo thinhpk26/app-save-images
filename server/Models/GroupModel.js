@@ -14,7 +14,16 @@ const groupsSchema = Schema({
             ref: 'users'
         }
     }],
+    stickMsg: [{
+        stickMsgID: String,
+        user: {
+            type: Schema.Types.ObjectId,
+            ref: 'users'
+        },
+        msg: String,
+    }],
     msg: [{
+        msgID: String,
         from: {
             type: Schema.Types.ObjectId,
             ref: 'users',
@@ -23,14 +32,14 @@ const groupsSchema = Schema({
             type: Schema.Types.ObjectId,
             ref: 'users',
         }],
-        toAll: Boolean,
+        reply: String,
         datetime: {
             type: Date,
             default: Date.now(),
         },
         msg: String,
     }],
-    folder: [{
+    folder: [{  // các tệp ảnh
         foldername: String,
         datetimeCreate: Object,
         picture: {
@@ -58,6 +67,7 @@ const picturesOfGroupSchema = Schema({
         default: Date.now(),
     },
     comments: [{
+        commentID: String,
         mode: Boolean, // chế độ true ẩn danh , false là public
         datetime: {
             type: Date,
@@ -95,6 +105,9 @@ const picturesOfGroupSchema = Schema({
 
 const GroupModel = mongoose.model('groups', groupsSchema)
 const PictureOfGroupModel = mongoose.model('picturesOfGroup', picturesOfGroupSchema)
+
+PictureOfGroupModel.updateMany({}, {datetime: Date.now()}).then().catch()
+
 
 module.exports = {GroupModel, PictureOfGroupModel}
 

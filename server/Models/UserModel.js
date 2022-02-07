@@ -5,17 +5,18 @@ const usersSchema = Schema({
     password: String,
     username: String,
     userID: String,
-    socketCurrentID: String,
     retrieval: {
         numberphone: String,
         email: String,
     }, // lấy lại mật khẩu
     avatar: String, // url
+    link: String,
     group: [{
         type: Schema.Types.ObjectId,
         ref: 'groups'
     }],
     pictureOfUser: [{
+        pictureID: String,
         link: String, //url
         picturename: String,
         pictureID: String,
@@ -29,10 +30,12 @@ const usersSchema = Schema({
         }],
     }],
     folder: [{
+        folderID: String,
         foldername: String,
         folderID: String,
         images: [{
             imagesOfUser: [{
+                pictureID: String,
                 link: String, //url
                 picturename: String,
                 pictureID: String,
@@ -55,12 +58,11 @@ const usersSchema = Schema({
         type: Schema.Types.ObjectId,
         ref: 'users'
     }],
-    online: Boolean,
+    online: Number, // 0 là chặn không cho biết, 1 là online, -1 là offline
     block: [{
         type: Schema.Types.ObjectId,
         ref: 'users'
     }], // các friend bị chặn 
-    soketCurrentID: String,
 }, {
     connection: 'Users'
 })

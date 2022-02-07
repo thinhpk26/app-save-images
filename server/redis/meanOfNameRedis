@@ -1,0 +1,8 @@
+vd: lấy tên, tuổi những người có độ tuổi trên 20
+hashkey: '(người > 20 tuổi)'          -----------------            key: 'select: tên tuổi' 
+
+=========================================Liệt kê các hashkey và key dưới đây========================================================================
+chú thích: "..." - ... là biến được truyền vào
+
+
+- lưu tạm thời socketID của user đó: -------------------------------------------------- hashkey: 'socketCurrentID: _id("_id")' ------- key: 'save momentarily'
