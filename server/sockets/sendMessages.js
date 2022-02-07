@@ -1,6 +1,7 @@
 const cookie = require('cookie')
 const jwt = require('jsonwebtoken')
 const {v4} = require('uuid')
+require('dotenv').config()
 const UserModel = require('../Models/UserModel')
 const {GroupModel} = require('../Models/GroupModel')
 const {findModel, saveRedis, getRedis} = require('../redis/connectRedis')
@@ -9,16 +10,18 @@ const {findModel, saveRedis, getRedis} = require('../redis/connectRedis')
 module.exports = async function(socket, io) {
     try {
         socket.on('send messages to a group', async ({group, to, reply, msg}) => {
+            console.log(to)
             const IDToken = cookie.parse(socket.handshake.headers.cookie).IDToken
             if(IDToken === socket._idToken) {
-                if(group) const _idGroup = jwt.verify(group, process.env.JWTPASSWORD)
+                let _idGroup
+                if(group) _idGroup = jwt.verify(group, process.env.JWTPASSWORD)
                 else io.to(socket.id).emit('error account')
-                // nếu 'to' là @mọi người thì ký hiệu 1 còn nếu là @user thì sẽ là 1 mảng gồm các _idUser
+                // nếu 'to' là @mọi người thì là mảng rỗng còn nếu là @user thì sẽ là 1 mảng gồm các _idUser, không có @ thì trường to là null
                 // nếu là trả lời tin nhắn trong nhóm thì thêm trường 'reply'
                 const msgID = v4()
                 const IDmsgToken = jwt.sign(msgID, process.env.JWTPASSWORD)
                 if(to) {
-                    if(to.length > 0) {
+                    if(to instanceof Array) {
                         const _idUsersAreSended = []
                         for(const _idUserIsSended of to)
                             _idUsersAreSended.push(jwt.verify(_idUserIsSended, process.env.JWTPASSWORD))
@@ -28,9 +31,11 @@ module.exports = async function(socket, io) {
                                 msgID: msgID,
                                 from: socket._id,
                                 reply: _idReply,
-                                to,
+                                to: _idUsersAreSended,
                                 msg,
-                            }}}).exec(() => {
+                            }}})
+                            .then((result) => {
+                                if(result.modifiedCount > 0)
                                 // trạng thái đã được lưu và chờ các user khác nhận msg
                                 io.to(socket.id).emit('receive messages from own: sended')
                             })
@@ -39,9 +44,11 @@ module.exports = async function(socket, io) {
                             GroupModel.updateOne({_id: _idGroup}, {$push: {msg: {
                                 msgID: msgID,
                                 from: socket._id,
-                                to,
+                                to: _idUsersAreSended,
                                 msg,
-                            }}}).exec(() => {
+                            }}})
+                            .then((result) => {
+                                if(result.modifiedCount > 0)
                                 // trạng thái đã được lưu và chờ các user khác nhận msg
                                 io.to(socket.id).emit('receive messages from own: sended')
                             })
@@ -54,47 +61,58 @@ module.exports = async function(socket, io) {
                                 msgID: msgID,
                                 from: socket._id,
                                 reply: _idReply,
-                                to: [1],
+                                to: [],
                                 msg,
-                            }}}).exec(() => {
+                            }}})
+                            .then((result) => {
+                                if(result.modifiedCount > 0)
                                 // trạng thái đã được lưu và chờ các user khác nhận msg
-                                io.to(socket.id).emit('receive messages from own: someone is sended', {isSended: true})
+                                io.to(socket.id).emit('receive messages from own: sended')
                             })
                             socket.to(_idGroup).emit('receive messages from other', {from: socket.userIDToken, to: 1, reply, IDmsgToken, msg})
                         } else {
                             GroupModel.updateOne({_id: _idGroup}, {$push: {msg: {
                                 msgID: msgID,
                                 from: socket._id,
-                                to: [1],
+                                to: [],
                                 msg,
-                            }}}).exec(() => {
+                            }}})
+                            .then((result) => {
+                                if(result.modifiedCount > 0)
                                 // trạng thái đã được lưu và chờ các user khác nhận msg
-                                io.to(socket.id).emit('receive messages from own: someone is sended', {isSended: true})
+                                io.to(socket.id).emit('receive messages from own: sended')
                             })
                             socket.to(_idGroup).emit('receive messages from other', {from: socket.userIDToken, to: 1, IDmsgToken, msg})
                         }
                     }
                 } else {
+                    console.log('all')
                     if(reply) {
                         const _idReply = jwt.verify(reply, process.env.JWTPASSWORD)
                         GroupModel.updateOne({_id: _idGroup}, {$push: {msg: {
                             msgID: msgID,
                             from: socket._id,
+                            to: null,
                             reply: _idReply,
                             msg,
-                        }}}).exec(() => {
+                        }}})
+                        .then((result) => {
+                            if(result.modifiedCount > 0)
                             // trạng thái đã được lưu và chờ các user khác nhận msg
-                            io.to(socket.id).emit('receive messages from own: someone is sended', {isSended: true})
+                            io.to(socket.id).emit('receive messages from own: sended')
                         })
                         socket.to(_idGroup).emit('receive messages from other', {from: socket.userIDToken, reply, IDmsgToken, msg})
                     } else {
                         GroupModel.updateOne({_id: _idGroup}, {$push: {msg: {
                             msgID: msgID,
+                            to: null,
                             from: socket._id,
                             msg,
-                        }}}).exec(() => {
+                        }}})
+                        .then((result) => {
+                            if(result.modifiedCount > 0)
                             // trạng thái đã được lưu và chờ các user khác nhận msg
-                            io.to(socket.id).emit('receive messages from own: someone is sended', {isSended: true})
+                            io.to(socket.id).emit('receive messages from own: sended')
                         })
                         socket.to(_idGroup).emit('receive messages from other', {from: socket.userIDToken, reply, IDmsgToken, msg})
                     }

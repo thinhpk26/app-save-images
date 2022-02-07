@@ -5,6 +5,9 @@ const UsersModel = require('../Models/UserModel')
 const cookie = require('cookie')
 require('dotenv').config()
 const jwt = require('jsonwebtoken')
+const userConnect = require('./userConnect')
+const sendMessages = require('./sendMessages')
+const testEventsSocket = require('./testEventsSocket')
 
 module.exports.listen = function(server) {
     const io = new Server(server)
@@ -49,6 +52,8 @@ module.exports.listen = function(server) {
     io.on('connection', async (socket) => {
         console.log('1 user connect socket')
         userConnect(socket)
+        testEventsSocket(socket, io)
+        sendMessages(socket, io)
     })
 }
 
